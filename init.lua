@@ -137,7 +137,7 @@ vim.o.ignorecase = true
 vim.o.smartcase = true
 
 -- Keep signcolumn on by default
-vim.o.signcolumn = 'yes'
+--vim.o.signcolumn = 'yes'
 
 -- Decrease update time
 vim.o.updatetime = 250
@@ -194,6 +194,15 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+--vim.g._last_active_tab = 1
+--vim.api.nvim_create_autocmd('TabLeave', {
+--  desc = 'Remember last active tab',
+--  callback = function()
+--    vim.g._last_active_tab = vim.tabpagenr()
+--  end
+--})
+--vim.keymap.set('n', '``', '', { desc = 'Switch to most recent tab' })
 
 vim.cmd [[
   vmap <tab> >gv
@@ -286,6 +295,11 @@ require('lazy').setup({
   --  end,
   --},
   {
+    'towolf/vim-helm',
+    config = function()
+    end
+  },
+  {
     'crispgm/nvim-tabline',
     config = function()
       vim.opt.showtabline = 2
@@ -295,8 +309,8 @@ require('lazy').setup({
         fnamemodify = function(input)
           --return str
           local str = input or ""
-          local dir_found, file = string.match(str, "^(.*/)([^/]+)$")
-          local dir = dir_found or ""
+          local dir = string.match(str, "^(.*/)") or ""
+          local file = string.match(str, "([^/]+)$") or ""
           local shortened = string.gsub(dir, "([^/]+)/", function (w)
             return w:sub(0,2).."/"
           end)
@@ -473,6 +487,20 @@ require('lazy').setup({
       -- Useful for getting pretty icons, but requires a Nerd Font.
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
+    -- opts = function(_, opts)
+    --   local actions = require("telescope.actions")
+    --   if not opts.defaults then
+    --     opts.defaults = {}
+    --   end
+    --   if not opts.defaults.mappings then
+    --     opts.defaults.mappings = {}
+    --   end
+    --   if not opts.defaults.mappings.n then
+    --     opts.defaults.mappings.n = {}
+    --   end
+    --   opts.defaults.mappings.n["n"] = actions.move_selection_next
+    --   opts.defaults.mappings.n["t"] = actions.move_selection_previous
+    -- end,
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
       -- it can fuzzy find! It's more than just a "file finder", it can search
@@ -521,6 +549,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<C-p>', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -828,9 +857,10 @@ require('lazy').setup({
     end,
   },
 
+  --[[
   { -- Autoformat
     'stevearc/conform.nvim',
-    event = { 'BufWritePre' },
+    --event = { 'BufWritePre' },
     cmd = { 'ConformInfo' },
     keys = {
       {
@@ -868,6 +898,7 @@ require('lazy').setup({
       },
     },
   },
+  ]]--
 
   { -- Autocompletion
     'saghen/blink.cmp',
@@ -879,13 +910,13 @@ require('lazy').setup({
         'L3MON4D3/LuaSnip',
         version = '2.*',
         build = (function()
-          -- Build Step is needed for regex support in snippets.
-          -- This step is not supported in many windows environments.
-          -- Remove the below condition to re-enable on windows.
-          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-            return
-          end
-          return 'make install_jsregexp'
+          ---- Build Step is needed for regex support in snippets.
+          ---- This step is not supported in many windows environments.
+          ---- Remove the below condition to re-enable on windows.
+          --if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+          --  return
+          --end
+          --return 'make install_jsregexp'
         end)(),
         dependencies = {
           -- `friendly-snippets` contains a variety of premade snippets.
@@ -898,7 +929,18 @@ require('lazy').setup({
           --   end,
           -- },
         },
-        opts = {},
+        --opts = {},
+        config = function(_, opts)
+          local ls = require("luasnip")
+          ls.config.set_config {
+
+            updateevents = "TextChanged,TextChangedI",
+            --enable_autosnippets = true,
+          }
+          require("luasnip.loaders.from_lua").load({
+            paths = {"~/.config/nvim/snippets"},
+          })
+        end,
       },
       'folke/lazydev.nvim',
     },
@@ -947,13 +989,15 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'snippets', 'lsp', 'path', 'lazydev', 'buffer' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
         },
       },
 
-      snippets = { preset = 'luasnip' },
+      snippets = {
+        preset = 'luasnip',
+      },
 
       -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
       -- which automatically downloads a prebuilt binary when enabled.
@@ -969,12 +1013,23 @@ require('lazy').setup({
     },
   },
 
+  --{ -- cursorline is messed up using this scheme
+  --  'olimorris/onedarkpro.nvim',
+  --  priority = 1000, -- Make sure to load this before all the other start plugins.
+  --  config = function()
+  --    require('onedarkpro').setup {
+  --      --style = 'warmer',
+  --    }
+
+  --    vim.cmd.colorscheme 'onedark'
+  --  end,
+  --},
   {
     'navarasu/onedark.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
       require('onedark').setup {
-        style = 'warmer',
+        style = 'warmer', -- pretty good, but comments are *very* hard to read
       }
 
       vim.cmd.colorscheme 'onedark'
@@ -1135,6 +1190,10 @@ vim.opt.smartindent = false
 vim.opt.tabstop = 2
 vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.wo.foldmethod = 'expr'
+
+vim.keymap.set('n', '<leader>gb', '<cmd>Git blame -wC<CR>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<leader>wm', '<C-w>|<C-w>_', { desc = 'Maximize the active split' })
+vim.keymap.set('n', '<leader>we', '<C-w>=', { desc = 'Equalize all splits' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
