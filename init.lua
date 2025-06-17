@@ -124,7 +124,7 @@ vim.o.showmode = false
 --  vim.o.clipboard = 'unnamedplus'
 --end)
 
--- Enable break indent
+-- Enable break indent : https://neovim.io/doc/user/options.html#'breakindent'
 --vim.o.breakindent = true
 vim.o.breakindent = false
 
@@ -213,12 +213,12 @@ vim.cmd [[
   au TabLeave * let g:lasttab = tabpagenr()
 
   " tab navigation like firefox
-  nnoremap <C-S-tab> :tabprevious<CR>
-  nnoremap <C-tab>   :tabnext<CR>
-  nnoremap <C-t>     :tabnew<CR>
-  inoremap <C-S-tab> <Esc>:tabprevious<CR>i
-  inoremap <C-tab>   <Esc>:tabnext<CR>i
-  inoremap <C-t>     <Esc>:tabnew<CR>
+  "nnoremap <C-S-tab> :tabprevious<CR>
+  "nnoremap <C-tab>   :tabnext<CR>
+  "inoremap <C-S-tab> <Esc>:tabprevious<CR>i
+  "inoremap <C-tab>   <Esc>:tabnext<CR>i
+  "nnoremap <C-t>     :tabnew<CR>
+  "inoremap <C-t>     <Esc>:tabnew<CR>
 ]]
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -523,6 +523,37 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+      local actions = require('telescope.actions')
+      local action_state = require('telescope.actions.state')
+      local custom_actions = {}
+
+      -- based on a combination of
+      -- https://github.com/nvim-telescope/telescope.nvim/issues/1048#issuecomment-889122232
+      -- and
+      -- https://github.com/nvim-telescope/telescope.nvim/issues/1048#issuecomment-1924898073
+      function custom_actions.get_entries(prompt_bufnr)
+        local picker = action_state.get_current_picker(prompt_bufnr)
+        local multi_selection = picker:get_multi_selection()
+        return #multi_selection > 1 and multi_selection or { action_state.get_selected_entry() }
+      end
+
+      function custom_actions.multi_action(prompt_bufnr, action)
+        for _, entry in ipairs(custom_actions.get_entries(prompt_bufnr)) do
+          --vim.cmd(string.format("%s %s", ":e!", entry.value))
+          vim.cmd(string.format("%s %s", action, entry.value))
+        end
+        vim.cmd('stopinsert')
+      end
+      function custom_actions.multi_vsplit(prompt_bufnr)
+        custom_actions.multi_action(prompt_bufnr, ":vsplit!")
+      end
+      function custom_actions.multi_split(prompt_bufnr)
+        custom_actions.multi_action(prompt_bufnr, ":split!")
+      end
+      function custom_actions.multi_tabs(prompt_bufnr)
+        custom_actions.multi_action(prompt_bufnr, ":tabnew!")
+      end
+
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
@@ -532,12 +563,42 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
-        extensions = {
-          ['ui-select'] = {
-            require('telescope.themes').get_dropdown(),
+        defaults = {
+          --file_ignore_patterns = { "node_modules", ".git" },
+          layout_strategy = "bottom_pane",
+          theme = "ivy",
+          mappings = {
+            i = {
+              --['<esc>'] = actions.close,
+              ['<C-j>'] = actions.move_selection_next,
+              ['<C-k>'] = actions.move_selection_previous,
+              ['<C-z>'] = actions.toggle_selection,
+              --['<tab>'] = actions.toggle_selection + actions.move_selection_next,
+              --['<s-tab>'] = actions.toggle_selection + actions.move_selection_previous,
+              --['<cr>'] = custom_actions.fzf_multi_select,
+              ['<C-v>'] = custom_actions.multi_vsplit,
+              ['<C-s>'] = custom_actions.multi_split,
+              ['<C-t>'] = custom_actions.multi_tabs,
+            },
+            n = {
+              --['<esc>'] = actions.close,
+              --['<tab>'] = actions.toggle_selection + actions.move_selection_next,
+              --['<s-tab>'] = actions.toggle_selection + actions.move_selection_previous,
+              --['<cr>'] = custom_actions.fzf_multi_select,
+              ['<C-z>'] = actions.toggle_selection,
+              ['<C-v>'] = custom_actions.multi_vsplit,
+              ['<C-s>'] = custom_actions.multi_split,
+              ['<C-t>'] = custom_actions.multi_tabs,
+            }
           },
         },
+        -- pickers = {}
+        --extensions = {
+        --  ['ui-select'] = {
+        --    --require('telescope.themes').get_dropdown(),
+        --    require('telescope.themes').get_dropdown(),
+        --  },
+        --},
       }
 
       -- Enable Telescope extensions if they are installed
@@ -803,6 +864,8 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
+        ts_ls = {},
+        marksman = {},
         --
 
         lua_ls = {
@@ -1035,6 +1098,24 @@ require('lazy').setup({
       vim.cmd.colorscheme 'onedark'
     end,
   },
+  --{
+  --  'EdenEast/nightfox.nvim',
+  --  priority = 1000, -- Make sure to load this before all the other start plugins.
+  --  config = function()
+  --    require('nightfox').setup {
+  --      --style = 'warmer', -- pretty good, but comments are *very* hard to read
+  --    }
+
+  --    --local palettes = require('nightfox.palette').load()
+  --    --print(vim.inspect(palettes))
+
+  --    --vim.cmd.colorscheme 'nightfox'
+  --    --vim.cmd.colorscheme 'Carbonfox'
+  --    --vim.cmd.colorscheme 'Nordfox'
+  --    --vim.cmd.colorscheme 'Nightfox'
+  --    --vim.cmd.colorscheme 'Duskfox'
+  --  end,
+  --},
 
   -- Highlight todo, notes, etc in comments
   {
@@ -1190,10 +1271,24 @@ vim.opt.smartindent = false
 vim.opt.tabstop = 2
 vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.wo.foldmethod = 'expr'
+vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
-vim.keymap.set('n', '<leader>gb', '<cmd>Git blame -wC<CR>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<leader>gbl', '<cmd>Git blame -wC<CR>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<leader>gdi', '<cmd>Gvdiffsplit!<CR>', { desc = 'Move focus to the upper window' })
 vim.keymap.set('n', '<leader>wm', '<C-w>|<C-w>_', { desc = 'Maximize the active split' })
 vim.keymap.set('n', '<leader>we', '<C-w>=', { desc = 'Equalize all splits' })
+vim.keymap.set('n', '<C-tab>', '<cmd>tabnext<CR>', { desc = 'Move to next tab' })
+vim.keymap.set('i', '<C-tab>', '<Esc><cmd>tabnext<CR>i', { desc = 'Move to next tab' })
+vim.keymap.set('n', '<C-S-tab>', '<cmd>tabprevious<CR>', { desc = 'Move to previous tab' })
+vim.keymap.set('i', '<C-S-tab>', '<Esc><cmd>tabprevious<CR>i', { desc = 'Move to previous tab' })
+vim.keymap.set('n', '<C-t>', '<cmd>tabnew<CR>', { desc = 'Create a new tab' })
+vim.keymap.set('i', '<C-t>', '<Esc><cmd>tabnew<CR>i', { desc = 'Create a new tab' })
+--  "nnoremap <C-S-tab> :tabprevious<CR>
+--  "inoremap <C-S-tab> <Esc>:tabprevious<CR>i
+--  "nnoremap <C-tab>   :tabnext<CR>
+--  "inoremap <C-tab>   <Esc>:tabnext<CR>i
+--  "nnoremap <C-t>     :tabnew<CR>
+--  "inoremap <C-t>     <Esc>:tabnew<CR>
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
