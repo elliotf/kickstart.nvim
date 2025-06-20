@@ -295,6 +295,24 @@ require('lazy').setup({
   --  end,
   --},
   {
+      "sirtaj/vim-openscad",
+      config = function()
+          --vim.g.openscad_load_snippets = true
+          --vim.g.openscad_load_snippets = false
+          --require("vim-openscad")
+      end,
+      --dependencies = { "L3MON4D3/LuaSnip", "junegunn/fzf.vim" },
+  },
+  --{
+  --    "salkin-mada/openscad.nvim",
+  --    config = function()
+  --        --vim.g.openscad_load_snippets = true
+  --        --vim.g.openscad_load_snippets = false
+  --        require("openscad")
+  --    end,
+  --    dependencies = { "L3MON4D3/LuaSnip", "junegunn/fzf.vim" },
+  --},
+  {
     'towolf/vim-helm',
     config = function()
     end
@@ -617,7 +635,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      --vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
