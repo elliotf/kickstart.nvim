@@ -558,7 +558,7 @@ require('lazy').setup({
       function custom_actions.multi_action(prompt_bufnr, action)
         for _, entry in ipairs(custom_actions.get_entries(prompt_bufnr)) do
           --vim.cmd(string.format("%s %s", ":e!", entry.value))
-          vim.cmd(string.format("%s %s", action, entry.value))
+          vim.cmd(string.format("%s %s", action, entry.filename or entry.value))
         end
         vim.cmd('stopinsert')
       end
