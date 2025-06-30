@@ -209,17 +209,10 @@ vim.cmd [[
   vmap <s-tab> <gv
 
   let g:lasttab = 1
-  nnoremap ``    :exe "tabn ".g:lasttab<CR>
+  nnoremap `` :exe "tabn ".g:lasttab<CR>
   au TabLeave * let g:lasttab = tabpagenr()
-
-  " tab navigation like firefox
-  "nnoremap <C-S-tab> :tabprevious<CR>
-  "nnoremap <C-tab>   :tabnext<CR>
-  "inoremap <C-S-tab> <Esc>:tabprevious<CR>i
-  "inoremap <C-tab>   <Esc>:tabnext<CR>i
-  "nnoremap <C-t>     :tabnew<CR>
-  "inoremap <C-t>     <Esc>:tabnew<CR>
 ]]
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -295,13 +288,21 @@ require('lazy').setup({
   --  end,
   --},
   {
-      "sirtaj/vim-openscad",
-      config = function()
-          --vim.g.openscad_load_snippets = true
-          --vim.g.openscad_load_snippets = false
-          --require("vim-openscad")
-      end,
-      --dependencies = { "L3MON4D3/LuaSnip", "junegunn/fzf.vim" },
+    "sphamba/smear-cursor.nvim",
+    config = function()
+      require('smear_cursor').setup({
+        -- time_interval = 7,
+      })
+    end,
+  },
+  {
+    "sirtaj/vim-openscad",
+    config = function()
+      --vim.g.openscad_load_snippets = true
+      --vim.g.openscad_load_snippets = false
+      --require("vim-openscad")
+    end,
+    --dependencies = { "L3MON4D3/LuaSnip", "junegunn/fzf.vim" },
   },
   --{
   --    "salkin-mada/openscad.nvim",
@@ -939,9 +940,9 @@ require('lazy').setup({
   },
 
   --[[
-  { -- Autoformat
+  { -- Autoformat, mixed feelings on this one
     'stevearc/conform.nvim',
-    --event = { 'BufWritePre' },
+    event = { 'BufWritePre' },
     cmd = { 'ConformInfo' },
     keys = {
       {
@@ -1232,6 +1233,17 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  { -- nice, but only shows diagnostics for the line that I am on
+    "rachartier/tiny-inline-diagnostic.nvim",
+    event = "VeryLazy", -- Or `LspAttach`
+    priority = 1000, -- needs to be loaded in first
+    config = function()
+      require('tiny-inline-diagnostic').setup({
+        preset = "powerline",
+      })
+      vim.diagnostic.config({ virtual_text = false }) -- Only if needed in your configuration, if you already have native LSP diagnostics
+    end
+  },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -1281,16 +1293,22 @@ require('lazy').setup({
   },
 })
 
-vim.o.expandtab = true
-vim.o.foldlevelstart = 100
-vim.o.wrap = false
-vim.opt.shiftwidth = 2
-vim.opt.smartindent = false
-vim.opt.tabstop = 2
 vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.wo.foldmethod = 'expr'
-vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
+-- a reusable function to fight against LSP doing weird things
+function applyBasicSettings()
+  vim.o.expandtab = true
+  vim.o.foldlevelstart = 100
+  vim.o.wrap = false
+  vim.opt.shiftwidth = 2
+  vim.opt.smartindent = false
+  vim.opt.tabstop = 2
+  vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+end
+applyBasicSettings()
+
+-- lua vim.diagnostic.open_float() -- to view diagnostics fully
 vim.keymap.set('n', '<leader>gbl', '<cmd>Git blame -wC<CR>', { desc = 'Move focus to the upper window' })
 vim.keymap.set('n', '<leader>gdi', '<cmd>Gvdiffsplit!<CR>', { desc = 'Move focus to the upper window' })
 vim.keymap.set('n', '<leader>wm', '<C-w>|<C-w>_', { desc = 'Maximize the active split' })
@@ -1301,6 +1319,29 @@ vim.keymap.set('n', '<C-S-tab>', '<cmd>tabprevious<CR>', { desc = 'Move to previ
 vim.keymap.set('i', '<C-S-tab>', '<Esc><cmd>tabprevious<CR>i', { desc = 'Move to previous tab' })
 vim.keymap.set('n', '<C-t>', '<cmd>tabnew<CR>', { desc = 'Create a new tab' })
 vim.keymap.set('i', '<C-t>', '<Esc><cmd>tabnew<CR>i', { desc = 'Create a new tab' })
+vim.keymap.set("n", "<leader>S", function()
+  local word = vim.fn.expand("<cword>") -- get the word under the cursor
+  vim.fn.setreg("/", word) -- store the word in the search register
+  vim.cmd("set hlsearch") -- enable search highlighting to show matches
+end, { desc = "start a search for word under cursor" })
+
+vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
+  callback = function ()
+    -- something about LSP is undoing my settings. Don't fight it directly for now and slap a piece of duct tape onto it
+    applyBasicSettings();
+  end
+})
+
+vim.keymap.set("n", "<leader>KM", function()
+  local builtin = require("telescope.builtin")
+    builtin.keymaps({
+      --layout_strategy = "horizontal",
+      --layout_config = { width = 0.6, height = 0.5 },
+      sorting_strategy = "ascending",
+      prompt_title = "🔑 Keymaps",
+    })
+end, { desc = "see all keymaps" })
+
 --  "nnoremap <C-S-tab> :tabprevious<CR>
 --  "inoremap <C-S-tab> <Esc>:tabprevious<CR>i
 --  "nnoremap <C-tab>   :tabnext<CR>
