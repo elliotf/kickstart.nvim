@@ -96,7 +96,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -296,28 +296,10 @@ require('lazy').setup({
     end,
   },
   {
-    'sirtaj/vim-openscad',
-    config = function()
-      --vim.g.openscad_load_snippets = true
-      --vim.g.openscad_load_snippets = false
-      --require("vim-openscad")
-    end,
-    --dependencies = { "L3MON4D3/LuaSnip", "junegunn/fzf.vim" },
-  },
-  --{
-  --    "salkin-mada/openscad.nvim",
-  --    config = function()
-  --        --vim.g.openscad_load_snippets = true
-  --        --vim.g.openscad_load_snippets = false
-  --        require("openscad")
-  --    end,
-  --    dependencies = { "L3MON4D3/LuaSnip", "junegunn/fzf.vim" },
-  --},
-  {
     'towolf/vim-helm',
     config = function() end,
   },
-  {
+  { -- works, but is not pretty
     'crispgm/nvim-tabline',
     config = function()
       vim.opt.showtabline = 2
@@ -325,7 +307,6 @@ require('lazy').setup({
         brackets = { '', '' },
         modify_indicator = '*',
         fnamemodify = function(input)
-          --return str
           local str = input or ''
           local dir = string.match(str, '^(.*/)') or ''
           local file = string.match(str, '([^/]+)$') or ''
@@ -334,12 +315,7 @@ require('lazy').setup({
           end)
           return shortened .. (file or '')
         end,
-        --fnamemodify = function(name)
-        --  return name
-        --  --return pathshorten(name, 2)
-        --end,
       }
-      -- wat
     end,
   },
   {
@@ -358,7 +334,7 @@ require('lazy').setup({
           ignore_focus = {},
           always_divide_middle = true,
           always_show_tabline = true,
-          globalstatus = false,
+          globalstatus = true,
           refresh = {
             statusline = 100,
             tabline = 100,
@@ -881,10 +857,6 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        ts_ls = {},
-        marksman = {},
-        --
 
         lua_ls = {
           -- cmd = { ... },
@@ -900,6 +872,9 @@ require('lazy').setup({
             },
           },
         },
+        marksman = {},
+        openscad_lsp = {},
+        ts_ls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -1183,15 +1158,26 @@ require('lazy').setup({
   --    vim.cmd.colorscheme 'onedark'
   --  end,
   --},
+  --{
+  --  'navarasu/onedark.nvim',
+  --  priority = 1000, -- Make sure to load this before all the other start plugins.
+  --  config = function()
+  --    require('onedark').setup {
+  --      style = 'warmer', -- pretty good, but comments are *very* hard to read
+  --    }
+
+  --    vim.cmd.colorscheme 'onedark'
+  --  end,
+  --},
   {
-    'navarasu/onedark.nvim',
+    'loctvl842/monokai-pro.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
-      require('onedark').setup {
-        style = 'warmer', -- pretty good, but comments are *very* hard to read
+      require('monokai-pro').setup {
+        filter = 'pro',
       }
 
-      vim.cmd.colorscheme 'onedark'
+      vim.cmd.colorscheme 'monokai-pro'
     end,
   },
   --{
