@@ -165,7 +165,7 @@ vim.o.inccommand = 'split'
 
 -- Show which line your cursor is on
 vim.o.cursorline = true
-vim.o.cursorcolumn= true
+vim.o.cursorcolumn = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
@@ -288,15 +288,15 @@ require('lazy').setup({
   --  end,
   --},
   {
-    "sphamba/smear-cursor.nvim",
+    'sphamba/smear-cursor.nvim',
     config = function()
-      require('smear_cursor').setup({
+      require('smear_cursor').setup {
         -- time_interval = 7,
-      })
+      }
     end,
   },
   {
-    "sirtaj/vim-openscad",
+    'sirtaj/vim-openscad',
     config = function()
       --vim.g.openscad_load_snippets = true
       --vim.g.openscad_load_snippets = false
@@ -315,8 +315,7 @@ require('lazy').setup({
   --},
   {
     'towolf/vim-helm',
-    config = function()
-    end
+    config = function() end,
   },
   {
     'crispgm/nvim-tabline',
@@ -327,13 +326,13 @@ require('lazy').setup({
         modify_indicator = '*',
         fnamemodify = function(input)
           --return str
-          local str = input or ""
-          local dir = string.match(str, "^(.*/)") or ""
-          local file = string.match(str, "([^/]+)$") or ""
-          local shortened = string.gsub(dir, "([^/]+)/", function (w)
-            return w:sub(0,2).."/"
+          local str = input or ''
+          local dir = string.match(str, '^(.*/)') or ''
+          local file = string.match(str, '([^/]+)$') or ''
+          local shortened = string.gsub(dir, '([^/]+)/', function(w)
+            return w:sub(0, 2) .. '/'
           end)
-          return shortened .. (file or "")
+          return shortened .. (file or '')
         end,
         --fnamemodify = function(name)
         --  return name
@@ -542,8 +541,8 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
-      local actions = require('telescope.actions')
-      local action_state = require('telescope.actions.state')
+      local actions = require 'telescope.actions'
+      local action_state = require 'telescope.actions.state'
       local custom_actions = {}
 
       -- based on a combination of
@@ -559,18 +558,18 @@ require('lazy').setup({
       function custom_actions.multi_action(prompt_bufnr, action)
         for _, entry in ipairs(custom_actions.get_entries(prompt_bufnr)) do
           --vim.cmd(string.format("%s %s", ":e!", entry.value))
-          vim.cmd(string.format("%s %s", action, entry.filename or entry.value))
+          vim.cmd(string.format('%s %s', action, entry.filename or entry.value))
         end
-        vim.cmd('stopinsert')
+        vim.cmd 'stopinsert'
       end
       function custom_actions.multi_vsplit(prompt_bufnr)
-        custom_actions.multi_action(prompt_bufnr, ":vsplit!")
+        custom_actions.multi_action(prompt_bufnr, ':vsplit!')
       end
       function custom_actions.multi_split(prompt_bufnr)
-        custom_actions.multi_action(prompt_bufnr, ":split!")
+        custom_actions.multi_action(prompt_bufnr, ':split!')
       end
       function custom_actions.multi_tabs(prompt_bufnr)
-        custom_actions.multi_action(prompt_bufnr, ":tabnew!")
+        custom_actions.multi_action(prompt_bufnr, ':tabnew!')
       end
 
       require('telescope').setup {
@@ -584,8 +583,8 @@ require('lazy').setup({
         -- },
         defaults = {
           --file_ignore_patterns = { "node_modules", ".git" },
-          layout_strategy = "bottom_pane",
-          theme = "ivy",
+          layout_strategy = 'bottom_pane',
+          theme = 'ivy',
           mappings = {
             i = {
               --['<esc>'] = actions.close,
@@ -608,7 +607,7 @@ require('lazy').setup({
               ['<C-v>'] = custom_actions.multi_vsplit,
               ['<C-s>'] = custom_actions.multi_split,
               ['<C-t>'] = custom_actions.multi_tabs,
-            }
+            },
           },
         },
         -- pickers = {}
@@ -938,6 +937,83 @@ require('lazy').setup({
       }
     end,
   },
+  { -- adapted from https://raw.githubusercontent.com/joeyagreco/dotfiles/fecfd8bb64a7d8a40f6e604e8c2cdcc196c367e9/.config/nvim/lua/plugins/conform.lua
+    'stevearc/conform.nvim',
+    lazy = true,
+    event = 'BufEnter',
+    cmd = { 'ToggleAutoFormat' },
+    keys = {
+      {
+        '<leader>f',
+        function()
+          require('conform').format { async = true, lsp_format = 'fallback' }
+        end,
+        mode = '',
+        desc = '[F]ormat buffer',
+      },
+    },
+    -- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#options
+    config = function()
+      require('conform').setup {
+        format_on_save = function(bufnr)
+          -- Disable with a global or buffer-local variable
+          if vim.g.disable_autoformat then
+            return
+          end
+          return { timeout_ms = 500, lsp_format = 'fallback' }
+        end,
+
+        log_level = vim.log.levels.INFO,
+        -- built in formatters: https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters
+        formatters_by_ft = {
+          css = { 'prettier' },
+          go = { 'gofmt', 'goimports' },
+          html = { 'prettier' },
+          javascript = { 'prettier' },
+          javascriptreact = { 'prettier' },
+          -- https://github.com/rhysd/fixjson
+          json = { 'fixjson' },
+          jsonc = { 'prettier' },
+          lua = { 'stylua' },
+          proto = { 'buf' },
+          python = { 'ruff_check', 'ruff_fmt' },
+          sh = { 'shfmt' },
+          terraform = { 'terraform_fmt' },
+          hcl = { 'terraform_fmt' },
+          toml = { 'taplo' },
+          typescript = { 'prettier' },
+          typescriptreact = { 'prettier' },
+          xml = { 'xmlstarlet' },
+          yaml = {},
+          yml = {},
+          zsh = { 'shfmt' },
+        },
+        formatters = {
+          ruff_check = {
+            inherit = false,
+            stdin = true,
+            command = 'ruff',
+            -- for now, don't need the config file but if we need in future use this format to use it
+            -- args = { "check", "-", "--config", RUFF_CONFIG_FILE, "--fix", "-q" },
+            args = { 'check', '-', '--fix', '-q' },
+          },
+          ruff_fmt = {
+            inherit = false,
+            stdin = true,
+            command = 'ruff',
+            args = { 'format', '-', '--config', RUFF_CONFIG_FILE, '-q' },
+          },
+        },
+      }
+
+      -- https://github.com/stevearc/conform.nvim/blob/master/doc/recipes.md#command-to-toggle-format-on-save
+      vim.api.nvim_create_user_command('ToggleAutoFormat', function(args)
+        vim.g.disable_autoformat = not vim.g.disable_autoformat
+      end, {
+        desc = 'toggle autoformat',
+      })
+    end,
+  },
 
   --[[
   { -- Autoformat, mixed feelings on this one
@@ -980,7 +1056,8 @@ require('lazy').setup({
       },
     },
   },
-  ]]--
+  ]]
+  --
 
   { -- Autocompletion
     'saghen/blink.cmp',
@@ -1013,15 +1090,15 @@ require('lazy').setup({
         },
         --opts = {},
         config = function(_, opts)
-          local ls = require("luasnip")
+          local ls = require 'luasnip'
           ls.config.set_config {
 
-            updateevents = "TextChanged,TextChangedI",
+            updateevents = 'TextChanged,TextChangedI',
             --enable_autosnippets = true,
           }
-          require("luasnip.loaders.from_lua").load({
-            paths = {"~/.config/nvim/snippets"},
-          })
+          require('luasnip.loaders.from_lua').load {
+            paths = { '~/.config/nvim/snippets' },
+          }
         end,
       },
       'folke/lazydev.nvim',
@@ -1234,15 +1311,15 @@ require('lazy').setup({
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
   { -- nice, but only shows diagnostics for the line that I am on
-    "rachartier/tiny-inline-diagnostic.nvim",
-    event = "VeryLazy", -- Or `LspAttach`
+    'rachartier/tiny-inline-diagnostic.nvim',
+    event = 'VeryLazy', -- Or `LspAttach`
     priority = 1000, -- needs to be loaded in first
     config = function()
-      require('tiny-inline-diagnostic').setup({
-        preset = "powerline",
-      })
-      vim.diagnostic.config({ virtual_text = false }) -- Only if needed in your configuration, if you already have native LSP diagnostics
-    end
+      require('tiny-inline-diagnostic').setup {
+        preset = 'powerline',
+      }
+      vim.diagnostic.config { virtual_text = false } -- Only if needed in your configuration, if you already have native LSP diagnostics
+    end,
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
@@ -1293,8 +1370,10 @@ require('lazy').setup({
   },
 })
 
-vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-vim.wo.foldmethod = 'expr'
+--vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+--vim.wo.foldmethod = 'expr'
+vim.wo.foldmethod = 'indent'
+vim.g.disable_autoformat = true
 
 -- a reusable function to fight against LSP doing weird things
 function applyBasicSettings()
@@ -1319,28 +1398,28 @@ vim.keymap.set('n', '<C-S-tab>', '<cmd>tabprevious<CR>', { desc = 'Move to previ
 vim.keymap.set('i', '<C-S-tab>', '<Esc><cmd>tabprevious<CR>i', { desc = 'Move to previous tab' })
 vim.keymap.set('n', '<C-t>', '<cmd>tabnew<CR>', { desc = 'Create a new tab' })
 vim.keymap.set('i', '<C-t>', '<Esc><cmd>tabnew<CR>i', { desc = 'Create a new tab' })
-vim.keymap.set("n", "<leader>S", function()
-  local word = vim.fn.expand("<cword>") -- get the word under the cursor
-  vim.fn.setreg("/", word) -- store the word in the search register
-  vim.cmd("set hlsearch") -- enable search highlighting to show matches
-end, { desc = "start a search for word under cursor" })
+vim.keymap.set('n', '<leader>S', function()
+  local word = vim.fn.expand '<cword>' -- get the word under the cursor
+  vim.fn.setreg('/', word) -- store the word in the search register
+  vim.cmd 'set hlsearch' -- enable search highlighting to show matches
+end, { desc = 'start a search for word under cursor' })
 
-vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
-  callback = function ()
+vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
+  callback = function()
     -- something about LSP is undoing my settings. Don't fight it directly for now and slap a piece of duct tape onto it
-    applyBasicSettings();
-  end
+    applyBasicSettings()
+  end,
 })
 
-vim.keymap.set("n", "<leader>KM", function()
-  local builtin = require("telescope.builtin")
-    builtin.keymaps({
-      --layout_strategy = "horizontal",
-      --layout_config = { width = 0.6, height = 0.5 },
-      sorting_strategy = "ascending",
-      prompt_title = "🔑 Keymaps",
-    })
-end, { desc = "see all keymaps" })
+vim.keymap.set('n', '<leader>KM', function()
+  local builtin = require 'telescope.builtin'
+  builtin.keymaps {
+    --layout_strategy = "horizontal",
+    --layout_config = { width = 0.6, height = 0.5 },
+    sorting_strategy = 'ascending',
+    prompt_title = '🔑 Keymaps',
+  }
+end, { desc = 'see all keymaps' })
 
 --  "nnoremap <C-S-tab> :tabprevious<CR>
 --  "inoremap <C-S-tab> <Esc>:tabprevious<CR>i
