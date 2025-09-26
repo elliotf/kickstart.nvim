@@ -287,14 +287,14 @@ require('lazy').setup({
   --    ]]
   --  end,
   --},
-  {
-    'sphamba/smear-cursor.nvim',
-    config = function()
-      require('smear_cursor').setup {
-        -- time_interval = 7,
-      }
-    end,
-  },
+  --{ -- This module gets very grumpy with my fugitive bindings and ends up h0rking nvim
+  --  'sphamba/smear-cursor.nvim',
+  --  config = function()
+  --    require('smear_cursor').setup {
+  --      -- time_interval = 7,
+  --    }
+  --  end,
+  --},
   {
     'towolf/vim-helm',
     config = function() end,
@@ -992,6 +992,24 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'kristijanhusak/vim-dadbod-ui',
+    dependencies = {
+      { 'tpope/vim-dadbod', lazy = true },
+      { 'kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql' }, lazy = true },
+    },
+    cmd = {
+      'DBUI',
+      'DBUIToggle',
+      'DBUIAddConnection',
+      'DBUIFindBuffer',
+    },
+    init = function()
+      -- Your DBUI configuration
+      vim.g.db_ui_use_nerd_fonts = 1
+    end,
+  },
+
   --[[
   { -- Autoformat, mixed feelings on this one
     'stevearc/conform.nvim',
@@ -1125,9 +1143,18 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'snippets', 'lsp', 'path', 'lazydev', 'buffer' },
+        default = { 'snippets', 'buffer', 'lsp', 'path', 'lazydev' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          buffer = {
+            opts = {
+              get_bufnrs = vim.api.nvim_list_bufs,
+            },
+          },
+          dadbod = { name = "Dadbod", module = "vim_dadbod_completion.blink" },
+        },
+        per_filetype = {
+          sql = { 'dadbod', inherit_defaults = true },
         },
       },
 
