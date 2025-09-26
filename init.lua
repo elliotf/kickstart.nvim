@@ -120,9 +120,9 @@ vim.o.showmode = false
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
---vim.schedule(function()
---  vim.o.clipboard = 'unnamedplus'
---end)
+vim.schedule(function()
+  vim.o.clipboard = 'unnamedplus'
+end)
 
 -- Enable break indent : https://neovim.io/doc/user/options.html#'breakindent'
 --vim.o.breakindent = true
@@ -874,6 +874,8 @@ require('lazy').setup({
         },
         marksman = {},
         openscad_lsp = {},
+        gopls = {}, -- golang
+        protols = {}, -- protobuf
         ts_ls = {},
       }
 
@@ -1374,6 +1376,10 @@ end
 applyBasicSettings()
 
 -- lua vim.diagnostic.open_float() -- to view diagnostics fully
+--vim.keymap.set('n', '<leader>y', '"+y', { desc = 'copy to system register' })
+--vim.keymap.set('v', '<leader>y', '"+y', { desc = 'copy to system register' })
+--vim.keymap.set('v', '<leader>y', '"+y :let @*=@+<CR>', { desc = 'copy to system and primary register' })
+--vim.keymap.set('n', '<leader>y', '"+y :let @*=@+<CR>', { desc = 'copy to system and primary register' })
 vim.keymap.set('n', '<leader>gbl', '<cmd>Git blame -wC<CR>', { desc = 'Move focus to the upper window' })
 vim.keymap.set('n', '<leader>gdi', '<cmd>Gvdiffsplit!<CR>', { desc = 'Move focus to the upper window' })
 vim.keymap.set('n', '<leader>wm', '<C-w>|<C-w>_', { desc = 'Maximize the active split' })
