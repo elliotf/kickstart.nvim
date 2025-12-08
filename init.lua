@@ -529,11 +529,29 @@ require('lazy').setup({
       end
 
       function custom_actions.multi_action(prompt_bufnr, action)
+        local close_bufnr = -1
+
+        -- if the first split/window on this tab is an unnamed, unmodified buffer, close it after we open our splits
+        local winid = vim.api.nvim_tabpage_list_wins(0)[1]
+        local bufnr = vim.api.nvim_win_get_buf(winid)
+        local bufname = vim.api.nvim_buf_get_name(bufnr)
+        local is_modified = vim.api.nvim_get_option_value("modified", { buf = bufnr })
+        if bufname == "" and not is_modified then
+          close_bufnr = bufnr
+        end
+
+        -- do what we've been asked to do for each entry
         for _, entry in ipairs(custom_actions.get_entries(prompt_bufnr)) do
           --vim.cmd(string.format("%s %s", ":e!", entry.value))
           vim.cmd(string.format('%s %s', action, entry.filename or entry.value))
         end
+
         vim.cmd 'stopinsert'
+
+        -- if there is a buf to close, do so
+        if close_bufnr > -1 then
+          vim.api.nvim_buf_delete(close_bufnr, {})
+        end
       end
       function custom_actions.multi_vsplit(prompt_bufnr)
         custom_actions.multi_action(prompt_bufnr, ':vsplit!')
