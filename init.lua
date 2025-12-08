@@ -287,14 +287,14 @@ require('lazy').setup({
   --    ]]
   --  end,
   --},
-  --{ -- This module gets very grumpy with my fugitive bindings and ends up h0rking nvim
-  --  'sphamba/smear-cursor.nvim',
-  --  config = function()
-  --    require('smear_cursor').setup {
-  --      -- time_interval = 7,
-  --    }
-  --  end,
-  --},
+  { -- This module seems to get grumpy with my fugitive bindings and ends up h0rking nvim, at least on a mac in wezterm
+    'sphamba/smear-cursor.nvim',
+    config = function()
+      require('smear_cursor').setup {
+        -- time_interval = 7,
+      }
+    end,
+  },
   {
     'towolf/vim-helm',
     config = function() end,
@@ -849,7 +849,7 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -858,6 +858,8 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
 
+        copilot = {},
+        cssls = {},
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -876,7 +878,11 @@ require('lazy').setup({
         openscad_lsp = {},
         gopls = {}, -- golang
         protols = {}, -- protobuf
+        svelte = {},
         ts_ls = {},
+        vue_ls = {},
+        vtsls = {},
+        yamlls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -978,7 +984,7 @@ require('lazy').setup({
             inherit = false,
             stdin = true,
             command = 'ruff',
-            args = { 'format', '-', '--config', RUFF_CONFIG_FILE, '-q' },
+            args = { 'format', '-', '-q' },
           },
         },
       }
@@ -1289,6 +1295,7 @@ require('lazy').setup({
       ensure_installed = {
         'bash',
         'c',
+        'css',
         'diff',
         'html',
         'lua',
@@ -1296,9 +1303,11 @@ require('lazy').setup({
         'markdown_inline',
         'markdown',
         'query',
+        'svelte',
         'typescript',
         'vim',
         'vimdoc',
+        'vue',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
@@ -1391,7 +1400,7 @@ vim.wo.foldmethod = 'indent'
 vim.g.disable_autoformat = true
 
 -- a reusable function to fight against LSP doing weird things
-function applyBasicSettings()
+local function applyBasicSettings()
   vim.o.expandtab = true
   vim.o.foldlevelstart = 100
   vim.o.wrap = false
@@ -1407,8 +1416,8 @@ applyBasicSettings()
 --vim.keymap.set('v', '<leader>y', '"+y', { desc = 'copy to system register' })
 --vim.keymap.set('v', '<leader>y', '"+y :let @*=@+<CR>', { desc = 'copy to system and primary register' })
 --vim.keymap.set('n', '<leader>y', '"+y :let @*=@+<CR>', { desc = 'copy to system and primary register' })
-vim.keymap.set('n', '<leader>gbl', '<cmd>Git blame -wC<CR>', { desc = 'Move focus to the upper window' })
-vim.keymap.set('n', '<leader>gdi', '<cmd>Gvdiffsplit!<CR>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<leader>gbl', '<cmd>Git blame -wC<CR>', { desc = 'Git blame, ignoring whitespace' })
+vim.keymap.set('n', '<leader>gdi', '<cmd>Gvdiffsplit!<CR>', { desc = 'Git diff' })
 vim.keymap.set('n', '<leader>wm', '<C-w>|<C-w>_', { desc = 'Maximize the active split' })
 vim.keymap.set('n', '<leader>we', '<C-w>=', { desc = 'Equalize all splits' })
 vim.keymap.set('n', '<C-tab>', '<cmd>tabnext<CR>', { desc = 'Move to next tab' })
@@ -1421,7 +1430,7 @@ vim.keymap.set('n', '<leader>S', function()
   local word = vim.fn.expand '<cword>' -- get the word under the cursor
   vim.fn.setreg('/', word) -- store the word in the search register
   vim.cmd 'set hlsearch' -- enable search highlighting to show matches
-end, { desc = 'start a search for word under cursor' })
+end, { desc = 'highlight the word under cursor' })
 
 vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
   callback = function()

@@ -10,6 +10,8 @@ local rep = extras.rep
 return {
   s("af", fmt("async function{}({}) {{ {} }}", { i(1), i(2), i(0), })),
   s("ag", fmt("async ({}) => {{ {} }}", { i(1), i(0), })),
+  s("grr", fmt("(req, res, next) => {{ {} }}", { i(0), })),
+  s("frr", fmt("function(req, res, next) {{ {} }}", { i(0), })),
   s("f", fmt("function{}({}) {{ {} }}", { i(1), i(2), i(0), })),
   s("g", fmt("({}) => {{ {} }}", { i(1), i(0), })),
   s("cl", fmt("console.log(\"{}\", {});", { i(1), rep(1), })),
@@ -68,9 +70,9 @@ return {
       dscr = "Inserts a context block",
     },
     {
-      t("context('"),
+      t("context(\""),
       i(1, ""),
-      t("', () => {"),
+      t("\", () => {"),
       i(0),
       t({ "", "});" }),
     }
@@ -82,9 +84,9 @@ return {
       dscr = "Inserts a describe block",
     },
     {
-      t("describe('"),
+      t("describe(\""),
       i(1, ""),
-      t("', () => {"),
+      t("\", () => {"),
       i(0),
       t({ "", "});" }),
     }
@@ -96,9 +98,9 @@ return {
       dscr = "Inserts an it block",
     },
     {
-      t("it('"),
+      t("it(\""),
       i(1, ""),
-      t("', async () => {"),
+      t("\", async () => {"),
       i(0),
       t({ "", "});" }),
     }
