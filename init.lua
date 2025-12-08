@@ -195,23 +195,20 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
---vim.g._last_active_tab = 1
---vim.api.nvim_create_autocmd('TabLeave', {
---  desc = 'Remember last active tab',
---  callback = function()
---    vim.g._last_active_tab = vim.tabpagenr()
---  end
---})
---vim.keymap.set('n', '``', '', { desc = 'Switch to most recent tab' })
-
 vim.cmd [[
   vmap <tab> >gv
   vmap <s-tab> <gv
-
-  let g:lasttab = 1
-  nnoremap `` :exe "tabn ".g:lasttab<CR>
-  au TabLeave * let g:lasttab = tabpagenr()
 ]]
+
+local last_tab_number = 1
+vim.api.nvim_create_autocmd("TabLeave", {
+  callback = function(arg)
+    last_tab_number = vim.fn.tabpagenr()
+  end,
+})
+vim.keymap.set('n', '``', function()
+  vim.api.nvim_set_current_tabpage(last_tab_number)
+end, { desc = 'switch to most recently active tab' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
