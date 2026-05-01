@@ -120,9 +120,9 @@ vim.o.showmode = false
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.schedule(function()
-  vim.o.clipboard = 'unnamedplus'
-end)
+--vim.schedule(function()
+--  vim.o.clipboard = 'unnamedplus'
+--end)
 
 -- Enable break indent : https://neovim.io/doc/user/options.html#'breakindent'
 --vim.o.breakindent = true
@@ -198,17 +198,14 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.cmd [[
   vmap <tab> >gv
   vmap <s-tab> <gv
+
+  let g:lasttab = 1
+  nnoremap `` :exe "tabn ".g:lasttab<CR>
+  au TabLeave * let g:lasttab = tabpagenr()
+
+  au BufLeave,FocusLost * silent! wall " automatically write buffer when switching away
 ]]
 
-local last_tab_number = 1
-vim.api.nvim_create_autocmd("TabLeave", {
-  callback = function(arg)
-    last_tab_number = vim.fn.tabpagenr()
-  end,
-})
-vim.keymap.set('n', '``', function()
-  vim.api.nvim_set_current_tabpage(last_tab_number)
-end, { desc = 'switch to most recently active tab' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -366,19 +363,20 @@ require('lazy').setup({
     config = function() end,
   },
   {
-    'mileszs/ack.vim',
-    config = function()
-      vim.cmd [[
-        let g:ackprg = 'rg --vimgrep --type-not sql --smart-case'
-        let g:ack_autoclose = 0
-        let g:ack_use_cword_for_empty_search = 1
-        cnoreabbrev Ack Ack!
-      ]]
-    end,
-  },
-  {
     'airblade/vim-gitgutter',
     config = function() end,
+  },
+
+  {
+    'stevearc/oil.nvim',
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Optional dependencies
+    dependencies = { { 'nvim-mini/mini.icons', opts = {} } },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+    lazy = false,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -629,13 +627,6 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
-        -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-          winblend = 10,
-          previewer = false,
-        })
-      end, { desc = '[/] Fuzzily search in current buffer' })
 
       -- It's also possible to pass additional configuration options.
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
@@ -729,6 +720,9 @@ require('lazy').setup({
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
           map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
+
+          -- TODO: add a shortcut to :LspRestart because some language servers don't pick up new definitions automatically
+          -- it looks like this might be changing to `:lsp restart`, according to https://github.com/neovim/nvim-lspconfig/blob/master/README.md#commands
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
@@ -873,8 +867,9 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
 
-        copilot = {},
+        --copilot = {},
         cssls = {},
+        emmet_language_server = {},
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -894,9 +889,18 @@ require('lazy').setup({
         gopls = {}, -- golang
         protols = {}, -- protobuf
         svelte = {},
-        ts_ls = {},
+        --ts_ls = {},
         vue_ls = {},
-        vtsls = {},
+        vtsls = {
+          init_options = {
+            hostInfo = 'neovim',
+            preferences = {
+              includeCompletionsForModuleExports = true,
+              includeCompletionsForImportStatements = true,
+              importModuleSpecifierPreference = 'relative',
+            },
+          },
+        },
         yamlls = {},
       }
 
@@ -964,6 +968,7 @@ require('lazy').setup({
         log_level = vim.log.levels.INFO,
         -- built in formatters: https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters
         formatters_by_ft = {
+          -- ["*"] = { "injected" }, -- this messes with svelte. Maybe it's useful elsewhere (html?)
           css = { 'prettier' },
           go = { 'gofmt', 'goimports' },
           html = { 'prettier' },
@@ -978,6 +983,10 @@ require('lazy').setup({
           sh = { 'shfmt' },
           terraform = { 'terraform_fmt' },
           hcl = { 'terraform_fmt' },
+
+          pgsql = { 'pg_format' }, -- install via `yay -S pgformatter`
+          sql = { 'pg_format' },
+          svelte = { 'svelte_fmt' }, -- globally install prettier, prettier-plugin-svelte
           toml = { 'taplo' },
           typescript = { 'prettier' },
           typescriptreact = { 'prettier' },
@@ -999,7 +1008,16 @@ require('lazy').setup({
             inherit = false,
             stdin = true,
             command = 'ruff',
+            --args = { 'format', '-', '--config', RUFF_CONFIG_FILE, '-q' },
             args = { 'format', '-', '-q' },
+          },
+          pg_format = {
+            prepend_args = { '-b', '-s', '2' }, -- Example: use tabs with 2 spaces
+            -- Refer to 'pg_format --help' for available options
+          },
+          svelte_fmt = {
+            command = 'prettier',
+            args = { '--plugin', 'prettier-plugin-svelte', '--stdin-filepath', '$FILENAME' },
           },
         },
       }
@@ -1172,7 +1190,10 @@ require('lazy').setup({
               get_bufnrs = vim.api.nvim_list_bufs,
             },
           },
-          dadbod = { name = "Dadbod", module = "vim_dadbod_completion.blink" },
+          dadbod = { name = 'Dadbod', module = 'vim_dadbod_completion.blink' },
+          snippets = {
+            score_offset = 4, -- without this, LSP results are shown first sometimes
+          },
         },
         per_filetype = {
           sql = { 'dadbod', inherit_defaults = true },
@@ -1303,8 +1324,9 @@ require('lazy').setup({
   --
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    branch = 'main',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    main = 'nvim-treesitter', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = {
@@ -1342,6 +1364,42 @@ require('lazy').setup({
         },
       },
     },
+    -- took from https://www.qu8n.com/posts/treesitter-migration-guide-for-nvim-0-12
+    init = function()
+      local ensureInstalled = {
+        'bash',
+        'c',
+        'css',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown_inline',
+        'markdown',
+        'query',
+        'svelte',
+        'typescript',
+        'vim',
+        'vimdoc',
+        'vue',
+      }
+      local alreadyInstalled = require('nvim-treesitter.config').get_installed()
+      local parsersToInstall = vim
+        .iter(ensureInstalled)
+        :filter(function(parser)
+          return not vim.tbl_contains(alreadyInstalled, parser)
+        end)
+        :totable()
+      require('nvim-treesitter').install(parsersToInstall)
+      vim.api.nvim_create_autocmd('FileType', {
+        callback = function()
+          -- Enable treesitter highlighting and disable regex syntax
+          pcall(vim.treesitter.start)
+          -- Enable treesitter-based indentation
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
+    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
@@ -1415,16 +1473,16 @@ vim.wo.foldmethod = 'indent'
 vim.g.disable_autoformat = true
 
 -- a reusable function to fight against LSP doing weird things
-local function applyBasicSettings()
-  vim.o.expandtab = true
-  vim.o.foldlevelstart = 100
-  vim.o.wrap = false
-  vim.opt.shiftwidth = 2
-  vim.opt.smartindent = false
-  vim.opt.tabstop = 2
-  vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
-end
-applyBasicSettings()
+-- local function applyBasicSettings()
+--   vim.o.expandtab = true
+--   vim.o.foldlevelstart = 100
+--   vim.o.wrap = false
+--   vim.opt.shiftwidth = 2
+--   vim.opt.smartindent = false
+--   vim.opt.tabstop = 2
+--   vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+-- end
+-- applyBasicSettings()
 
 -- lua vim.diagnostic.open_float() -- to view diagnostics fully
 --vim.keymap.set('n', '<leader>y', '"+y', { desc = 'copy to system register' })
@@ -1447,12 +1505,12 @@ vim.keymap.set('n', '<leader>S', function()
   vim.cmd 'set hlsearch' -- enable search highlighting to show matches
 end, { desc = 'highlight the word under cursor' })
 
-vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
-  callback = function()
-    -- something about LSP is undoing my settings. Don't fight it directly for now and slap a piece of duct tape onto it
-    applyBasicSettings()
-  end,
-})
+-- vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
+--   callback = function()
+--     -- something about LSP is undoing my settings. Don't fight it directly for now and slap a piece of duct tape onto it
+--     applyBasicSettings()
+--   end,
+-- })
 
 vim.keymap.set('n', '<leader>KM', function()
   local builtin = require 'telescope.builtin'

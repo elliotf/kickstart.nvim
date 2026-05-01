@@ -15,6 +15,7 @@ return {
   s("f", fmt("function{}({}) {{ {} }}", { i(1), i(2), i(0), })),
   s("g", fmt("({}) => {{ {} }}", { i(1), i(0), })),
   s("cl", fmt("console.log(\"{}\", {});", { i(1), rep(1), })),
+  s("clo", fmt("console.log({{ {} }});", { i(1) })),
   s(
     {
       trig = "afta",
