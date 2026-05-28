@@ -89,6 +89,9 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+--local log = require('log')
+--log:write('Starting')
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -157,7 +160,7 @@ vim.o.splitbelow = true
 --  It is very similar to `vim.o` but offers an interface for conveniently interacting with tables.
 --   See `:help lua-options`
 --   and `:help lua-options-guide`
-vim.o.list = true
+vim.wo.list = false
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
@@ -454,7 +457,11 @@ require('lazy').setup({
   -- Use the `dependencies` key to specify the dependencies of a particular plugin
 
   { -- Fuzzy Finder (files, lsp, etc)
-    'nvim-telescope/telescope.nvim',
+    -- use my fork of telescope because
+    -- https://github.com/nvim-telescope/telescope.nvim/blob/7d324792b7943e4aa16ad007212e6acc6f9fe335/lua/telescope/pickers.lua#L561
+    -- forcibly turns word wrap on. This might be due to how my custom actions open files
+    'elliotf/telescope.nvim',
+    branch = 'elliotf',
     event = 'VimEnter',
     dependencies = {
       'nvim-lua/plenary.nvim',
@@ -540,8 +547,9 @@ require('lazy').setup({
 
         -- do what we've been asked to do for each entry
         for _, entry in ipairs(custom_actions.get_entries(prompt_bufnr)) do
+          local lnum = entry.lnum or 1
           --vim.cmd(string.format("%s %s", ":e!", entry.value))
-          vim.cmd(string.format('%s %s', action, entry.filename or entry.value))
+          vim.cmd(string.format('%s +%d %s', action, lnum, entry.filename or entry.value))
         end
 
         vim.cmd 'stopinsert'
@@ -573,6 +581,10 @@ require('lazy').setup({
         defaults = {
           --file_ignore_patterns = { "node_modules", ".git" },
           layout_strategy = 'bottom_pane',
+          layout_config = {
+            height = 0.6,
+            preview_width = 0.7,
+          },
           theme = 'ivy',
           mappings = {
             i = {
@@ -598,6 +610,7 @@ require('lazy').setup({
               ['<C-t>'] = custom_actions.multi_tabs,
             },
           },
+          wrap_results = false,
         },
         -- pickers = {}
         --extensions = {
@@ -1101,7 +1114,8 @@ require('lazy').setup({
       -- Snippet Engine
       {
         'L3MON4D3/LuaSnip',
-        version = '2.*',
+        -- locked to this commit because latest versions break undo (I cannot undo changes)
+        commit = '458560534a73f7f8d7a11a146c801db00b081df0',
         build = (function()
           ---- Build Step is needed for regex support in snippets.
           ---- This step is not supported in many windows environments.
@@ -1471,18 +1485,14 @@ require('lazy').setup({
 --vim.wo.foldmethod = 'expr'
 vim.wo.foldmethod = 'indent'
 vim.g.disable_autoformat = true
-
--- a reusable function to fight against LSP doing weird things
--- local function applyBasicSettings()
---   vim.o.expandtab = true
---   vim.o.foldlevelstart = 100
---   vim.o.wrap = false
---   vim.opt.shiftwidth = 2
---   vim.opt.smartindent = false
---   vim.opt.tabstop = 2
---   vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
--- end
--- applyBasicSettings()
+vim.o.expandtab = true
+vim.o.foldlevelstart = 99
+vim.o.shiftwidth = 2
+--vim.o.smartindent = false
+vim.o.tabstop = 2
+vim.wo.wrap = false
+vim.opt.wrap = false
+vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 -- lua vim.diagnostic.open_float() -- to view diagnostics fully
 --vim.keymap.set('n', '<leader>y', '"+y', { desc = 'copy to system register' })
@@ -1504,13 +1514,6 @@ vim.keymap.set('n', '<leader>S', function()
   vim.fn.setreg('/', word) -- store the word in the search register
   vim.cmd 'set hlsearch' -- enable search highlighting to show matches
 end, { desc = 'highlight the word under cursor' })
-
--- vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
---   callback = function()
---     -- something about LSP is undoing my settings. Don't fight it directly for now and slap a piece of duct tape onto it
---     applyBasicSettings()
---   end,
--- })
 
 vim.keymap.set('n', '<leader>KM', function()
   local builtin = require 'telescope.builtin'
