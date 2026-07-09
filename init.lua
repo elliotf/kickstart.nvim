@@ -1266,6 +1266,13 @@ require('lazy').setup({
       vim.cmd.colorscheme 'monokai-pro'
     end,
   },
+  {
+    'zk-org/zk-nvim',
+    name = 'zk',
+    opts = {
+      -- See Setup section below
+    },
+  },
   --{
   --  'EdenEast/nightfox.nvim',
   --  priority = 1000, -- Make sure to load this before all the other start plugins.
