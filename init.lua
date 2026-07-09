@@ -869,6 +869,8 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
+        --bzl = {}, -- seems dead, trying starpls instead
+        starpls = {},
         -- clangd = {},
         -- gopls = {},
         pyright = {},
@@ -899,8 +901,8 @@ require('lazy').setup({
         },
         marksman = {},
         openscad_lsp = {},
-        gopls = {}, -- golang
-        protols = {}, -- protobuf
+        gopls = {}, -- golang -- need to `brew install tree-sitter-cli`
+        protols = {}, -- protobuf -- need to `mise use -g rust` and maybe `cargo install protols`
         svelte = {},
         --ts_ls = {},
         vue_ls = {},
