@@ -209,7 +209,6 @@ vim.cmd [[
   au BufLeave,FocusLost * silent! wall " automatically write buffer when switching away
 ]]
 
-
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -540,8 +539,8 @@ require('lazy').setup({
         local winid = vim.api.nvim_tabpage_list_wins(0)[1]
         local bufnr = vim.api.nvim_win_get_buf(winid)
         local bufname = vim.api.nvim_buf_get_name(bufnr)
-        local is_modified = vim.api.nvim_get_option_value("modified", { buf = bufnr })
-        if bufname == "" and not is_modified then
+        local is_modified = vim.api.nvim_get_option_value('modified', { buf = bufnr })
+        if bufname == '' and not is_modified then
           close_bufnr = bufnr
         end
 
