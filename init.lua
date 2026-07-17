@@ -916,6 +916,11 @@ require('lazy').setup({
           },
         },
         yamlls = {},
+        zk = {
+          filetypes = {
+            "markdown",
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -986,8 +991,8 @@ require('lazy').setup({
           css = { 'prettier' },
           go = { 'gofmt', 'goimports' },
           html = { 'prettier' },
-          javascript = { 'prettier' },
-          javascriptreact = { 'prettier' },
+          javascript = { 'biome', 'biome-organize-imports', 'prettier' },
+          javascriptreact = { 'biome', 'biome-organize-imports', 'prettier' },
           -- https://github.com/rhysd/fixjson
           json = { 'fixjson' },
           jsonc = { 'prettier' },
@@ -1002,8 +1007,8 @@ require('lazy').setup({
           sql = { 'pg_format' },
           svelte = { 'svelte_fmt' }, -- globally install prettier, prettier-plugin-svelte
           toml = { 'taplo' },
-          typescript = { 'prettier' },
-          typescriptreact = { 'prettier' },
+          typescript = { 'biome', 'biome-organize-imports', 'prettier' },
+          typescriptreact = { 'biome', 'biome-organize-imports', 'prettier' },
           xml = { 'xmlstarlet' },
           yaml = {},
           yml = {},
@@ -1367,6 +1372,7 @@ require('lazy').setup({
         'vim',
         'vimdoc',
         'vue',
+        'zk',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
@@ -1404,6 +1410,7 @@ require('lazy').setup({
         'vim',
         'vimdoc',
         'vue',
+        'zk',
       }
       local alreadyInstalled = require('nvim-treesitter.config').get_installed()
       local parsersToInstall = vim
