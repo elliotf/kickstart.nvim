@@ -304,6 +304,20 @@ require('lazy').setup({
         modify_indicator = '*',
         fnamemodify = function(input)
           local str = input or ''
+          -- For whatever reason, using LSP features sometimes ends up in the
+          -- file having the full path instead of the relative path. Let's trim
+          -- the beginning to avoid wide tabs
+          str = str:gsub('^/home/%a+/', '')
+          str = str:gsub('^/Users/%a+/code/render/', '')
+          local lookup = {
+            ['code/'] = '',
+            ['git/'] = '',
+            ['work/'] = '',
+          }
+          str = str:gsub('^(%a+/)', function(pref)
+            return lookup[pref] or pref
+          end)
+
           local dir = string.match(str, '^(.*/)') or ''
           local file = string.match(str, '([^/]+)$') or ''
           local shortened = string.gsub(dir, '([^/]+)/', function(w)
