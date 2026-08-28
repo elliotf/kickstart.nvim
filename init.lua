@@ -1539,6 +1539,13 @@ vim.keymap.set('n', '<leader>gbl', '<cmd>Git blame -wC<CR>', { desc = 'Git blame
 vim.keymap.set('n', '<leader>gdi', '<cmd>Gvdiffsplit!<CR>', { desc = 'Git diff' })
 vim.keymap.set('n', '<leader>wm', '<C-w>|<C-w>_', { desc = 'Maximize the active split' })
 vim.keymap.set('n', '<leader>we', '<C-w>=', { desc = 'Equalize all splits' })
+vim.keymap.set('n', '<leader>ww', '<cmd>set wrap!<CR>', { desc = 'Toggle Word Wrap' })
+
+-- Let j and k move down visual lines instead of skipping entire blocks of wrapped text
+vim.keymap.set('n', 'j', 'gj', { silent = true })
+vim.keymap.set('n', 'k', 'gk', { silent = true })
+-- this is a long line to test word wrap functionality and show how the cursor moves when the line is wrapped and I potentially move down a line. I will now copy this segment another time to have a very long line. -- this is a long line to test word wrap functionality and show how the cursor moves when the line is wrapped and I potentially move down a line. I will now copy this segment another time to have a very long line.
+
 vim.keymap.set('n', '<C-tab>', '<cmd>tabnext<CR>', { desc = 'Move to next tab' })
 vim.keymap.set('i', '<C-tab>', '<Esc><cmd>tabnext<CR>i', { desc = 'Move to next tab' })
 vim.keymap.set('n', '<C-S-tab>', '<cmd>tabprevious<CR>', { desc = 'Move to previous tab' })
