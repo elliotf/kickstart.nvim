@@ -997,7 +997,7 @@ require('lazy').setup({
     -- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#options
     config = function()
       require('conform').setup {
-        format_on_save = function(bufnr)
+        format_on_save = function()
           -- Disable with a global or buffer-local variable
           if vim.g.disable_autoformat then
             return
@@ -1063,7 +1063,7 @@ require('lazy').setup({
       }
 
       -- https://github.com/stevearc/conform.nvim/blob/master/doc/recipes.md#command-to-toggle-format-on-save
-      vim.api.nvim_create_user_command('ToggleAutoFormat', function(args)
+      vim.api.nvim_create_user_command('ToggleAutoFormat', function()
         vim.g.disable_autoformat = not vim.g.disable_autoformat
       end, {
         desc = 'toggle autoformat',
@@ -1164,7 +1164,7 @@ require('lazy').setup({
           -- },
         },
         --opts = {},
-        config = function(_, opts)
+        config = function(_)
           local ls = require 'luasnip'
           ls.config.set_config {
 
