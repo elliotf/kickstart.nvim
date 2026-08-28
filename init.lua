@@ -939,7 +939,7 @@ require('lazy').setup({
         yamlls = {},
         zk = {
           filetypes = {
-            "markdown",
+            'markdown',
           },
         },
       }
@@ -1531,8 +1531,8 @@ vim.opt.wrap = false
 vim.g.markdown_recommended_style = 0 -- https://www.reddit.com/r/neovim/comments/z2lhyz/comment/ixjb7je/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 -- lua vim.diagnostic.open_float() -- to view diagnostics fully
---vim.keymap.set('n', '<leader>y', '"+y', { desc = 'copy to system register' })
---vim.keymap.set('v', '<leader>y', '"+y', { desc = 'copy to system register' })
+vim.keymap.set('n', '<leader>y', '"+y', { desc = 'copy to system register' })
+vim.keymap.set('v', '<leader>y', '"+y', { desc = 'copy to system register' })
 --vim.keymap.set('v', '<leader>y', '"+y :let @*=@+<CR>', { desc = 'copy to system and primary register' })
 --vim.keymap.set('n', '<leader>y', '"+y :let @*=@+<CR>', { desc = 'copy to system and primary register' })
 vim.keymap.set('n', '<leader>gbl', '<cmd>Git blame -wC<CR>', { desc = 'Git blame, ignoring whitespace' })
