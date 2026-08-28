@@ -352,7 +352,14 @@ require('lazy').setup({
           },
         },
         sections = {
-          lualine_a = { 'mode' },
+          lualine_a = {
+            {
+              'mode',
+              fmt = function(mode)
+                return mode == 'INSERT' and vim.go.paste == true and mode .. ' (paste)' or mode
+              end,
+            },
+          },
           lualine_b = { 'branch', 'diff', 'diagnostics' },
           lualine_c = { 'filename' },
           lualine_x = { 'encoding', 'fileformat', 'filetype' },
