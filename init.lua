@@ -603,7 +603,7 @@ require('lazy').setup({
           layout_strategy = 'bottom_pane',
           layout_config = {
             height = 0.6,
-            preview_width = 0.7,
+            preview_width = 0.5, -- 0.7 was too wide, especially for deeply nested files
           },
           theme = 'ivy',
           mappings = {
@@ -1390,18 +1390,20 @@ require('lazy').setup({
         'c',
         'css',
         'diff',
+        'go',
         'html',
         'lua',
         'luadoc',
         'markdown_inline',
         'markdown',
         'query',
+        'sql',
         'svelte',
         'typescript',
         'vim',
         'vimdoc',
         'vue',
-        'zk',
+        --'zk',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
@@ -1428,18 +1430,20 @@ require('lazy').setup({
         'c',
         'css',
         'diff',
+        'go',
         'html',
         'lua',
         'luadoc',
         'markdown_inline',
         'markdown',
         'query',
+        'sql',
         'svelte',
         'typescript',
         'vim',
         'vimdoc',
         'vue',
-        'zk',
+        --'zk',
       }
       local alreadyInstalled = require('nvim-treesitter.config').get_installed()
       local parsersToInstall = vim
@@ -1560,7 +1564,8 @@ vim.keymap.set('n', '<C-S-tab>', '<cmd>tabprevious<CR>', { desc = 'Move to previ
 vim.keymap.set('i', '<C-S-tab>', '<Esc><cmd>tabprevious<CR>i', { desc = 'Move to previous tab' })
 vim.keymap.set('n', '<C-t>', '<cmd>tabnew<CR>', { desc = 'Create a new tab' })
 vim.keymap.set('i', '<C-t>', '<Esc><cmd>tabnew<CR>i', { desc = 'Create a new tab' })
-vim.keymap.set('n', '<leader>S', function()
+--vim.keymap.set('n', '<leader>S', function()
+vim.keymap.set('n', '<leader>hl', function()
   local word = vim.fn.expand '<cword>' -- get the word under the cursor
   vim.fn.setreg('/', word) -- store the word in the search register
   vim.cmd 'set hlsearch' -- enable search highlighting to show matches
