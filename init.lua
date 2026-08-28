@@ -1330,6 +1330,14 @@ require('lazy').setup({
     },
   },
 
+  -- maybe look at:
+  -- https://github.com/hat0uma/csvview.nvim
+  -- https://github.com/emmanueltouzery/decisive.nvim
+  {
+    'mechatroner/rainbow_csv',
+    config = function() end,
+  },
+
   --[[
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
